@@ -89,7 +89,7 @@ python manage.py runserver
 ```
 
 Visit: **http://127.0.0.1:8000**  
-Admin panel: **http://127.0.0.1:8000/admin** → admin / admin1234
+Admin panel: **http://127.0.0.1:8000/admin** → admin / Nemitha123
 
 ---
 
