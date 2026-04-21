@@ -1,0 +1,58 @@
+{% extends "base/base.html" %}
+{% block title %}Set Up Your Profile — Lanka Explorer{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="auth-card p-4 p-lg-5">
+        <div class="text-center mb-4">
+          <div class="auth-logo">🌴</div>
+          <h2>Tell us about yourself</h2>
+          <p class="text-muted">Help us personalise your Sri Lanka travel recommendations</p>
+        </div>
+        <form method="POST" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">I am a...</label>
+              {{ form.traveller_type }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Nationality</label>
+              {{ form.nationality }}
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Preferred Budget</label>
+              {{ form.preferred_budget }}
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Preferred Difficulty</label>
+              {{ form.preferred_difficulty }}
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Your Travel Interests</label>
+              <div class="interests-grid mt-2">
+                {% for choice_val, choice_label in form.interests_select.field.choices %}
+                <label class="interest-chip">
+                  <input type="checkbox" name="interests_select" value="{{ choice_val }}"
+                    {% if choice_val in form.interests_select.value %}checked{% endif %}>
+                  <span>{{ choice_label }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Currently in which Province? (Optional)</label>
+              {{ form.current_province }}
+            </div>
+          </div>
+          <div class="mt-4 d-flex gap-3">
+            <button type="submit" class="btn btn-primary btn-lg flex-grow-1">Get My Recommendations →</button>
+            <a href="{% url 'core:home' %}" class="btn btn-outline-secondary btn-lg">Skip</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

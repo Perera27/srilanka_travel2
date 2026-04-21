@@ -1,0 +1,285 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}{{ destination.name }} — Lanka Explorer{% endblock %}
+
+{% block extra_css %}
+<style>
+  #dest-map { height: 350px; border-radius: 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- BREADCRUMB -->
+<div class="container py-3">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'destinations:list' %}">Destinations</a></li>
+      {% if destination.category %}
+      <li class="breadcrumb-item"><a href="{% url 'destinations:list' %}?category={{ destination.category.slug }}">{{ destination.category.name }}</a></li>
+      {% endif %}
+      <li class="breadcrumb-item active">{{ destination.name }}</li>
+    </ol>
+  </nav>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4">
+
+    <!-- LEFT: Main Content -->
+    <div class="col-lg-8">
+
+      <!-- HERO IMAGE -->
+      <div class="detail-hero-wrap mb-4 position-relative rounded-4 overflow-hidden shadow">
+        {% if destination.featured_image %}
+          <img src="{{ destination.featured_image.url }}" alt="{{ destination.name }}" class="detail-hero-img w-100">
+        {% else %}
+          <div class="detail-hero-placeholder">{{ destination.category.icon|default:"🗺️" }}</div>
+        {% endif %}
+        {% if destination.is_hidden_gem %}
+        <div class="detail-gem-badge">🪄 Hidden Gem</div>
+        {% endif %}
+      </div>
+
+      <!-- GALLERY -->
+      {% if images %}
+      <div class="row g-2 mb-4">
+        {% for img in images %}
+        <div class="col-4">
+          <img src="{{ img.image.url }}" alt="{{ img.caption }}" class="img-fluid rounded-3 gallery-thumb" loading="lazy">
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- TITLE & META -->
+      <div class="d-flex flex-wrap justify-content-between align-items-start mb-3 gap-3">
+        <div>
+          <h1 class="detail-title mb-1">{{ destination.name }}</h1>
+          <p class="text-muted mb-0">
+            <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+            {{ destination.address|default:destination.city }}{% if destination.province %}, {{ destination.province.name }} Province{% endif %}
+          </p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          {% if destination.average_rating %}
+          <div class="detail-rating">
+            <span class="rating-stars">
+              {% for i in "12345" %}
+                {% if forloop.counter <= destination.average_rating %}⭐{% else %}☆{% endif %}
+              {% endfor %}
+            </span>
+            <span class="rating-text">{{ destination.average_rating }} ({{ destination.review_count }} review{{ destination.review_count|pluralize }})</span>
+          </div>
+          {% endif %}
+          {% if user.is_authenticated %}
+          <button class="btn btn-fav {% if is_favourite %}active{% endif %}" id="favBtn"
+            data-url="{% url 'destinations:toggle_favourite' destination.slug %}">
+            <i class="bi {% if is_favourite %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+            <span id="favText">{% if is_favourite %}Saved{% else %}Save{% endif %}</span>
+          </button>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- BADGES ROW -->
+      <div class="detail-badges mb-4 d-flex flex-wrap gap-2">
+        {% if destination.category %}<span class="badge bg-primary-subtle text-primary px-3 py-2">{{ destination.category.icon }} {{ destination.category.name }}</span>{% endif %}
+        <span class="badge bg-success-subtle text-success px-3 py-2">{{ destination.get_budget_level_display }}</span>
+        <span class="badge bg-warning-subtle text-warning-emphasis px-3 py-2">{{ destination.get_difficulty_display }}</span>
+        {% if destination.best_time_to_visit %}<span class="badge bg-info-subtle text-info px-3 py-2">🗓️ {{ destination.best_time_to_visit }}</span>{% endif %}
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div class="detail-section mb-4">
+        <h4 class="detail-section-title">About This Destination</h4>
+        <div class="detail-description">{{ destination.description|linebreaks }}</div>
+      </div>
+
+      <!-- DRESS CODE (Religious sites) -->
+      {% if destination.requires_dress_code %}
+      <div class="dress-code-alert mb-4">
+        <div class="dress-code-icon">👗</div>
+        <div>
+          <h6 class="mb-1">Dress Code Required</h6>
+          <p class="mb-0 small">{{ destination.dress_code_description }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- SAFETY NOTES -->
+      {% if destination.safety_notes %}
+      <div class="safety-alert mb-4">
+        <div class="safety-icon">🛡️</div>
+        <div>
+          <h6 class="mb-1">Safety Information</h6>
+          <p class="mb-0 small">{{ destination.safety_notes }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- MAP -->
+      {% if destination.latitude and destination.longitude %}
+      <div class="detail-section mb-4">
+        <h4 class="detail-section-title">Location</h4>
+        <div id="dest-map"></div>
+      </div>
+      {% endif %}
+
+      <!-- REVIEWS -->
+      <div class="detail-section mb-4" id="reviews">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="detail-section-title mb-0">Reviews <span class="text-muted small">({{ destination.review_count }})</span></h4>
+          {% if user.is_authenticated %}
+          <a href="{% url 'reviews:submit' destination.slug %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-pencil me-1"></i>Write a Review
+          </a>
+          {% else %}
+          <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-sm btn-outline-primary">Login to Review</a>
+          {% endif %}
+        </div>
+
+        {% if reviews %}
+        <div class="reviews-list">
+          {% for review in reviews %}
+          <div class="review-card">
+            <div class="review-header">
+              <div class="review-author">
+                <div class="review-avatar">{{ review.user.first_name.0|default:review.user.username.0|upper }}</div>
+                <div>
+                  <strong>{{ review.user.first_name|default:review.user.username }}</strong>
+                  {% if review.visit_date %}<small class="text-muted ms-2">Visited {{ review.visit_date|date:"M Y" }}</small>{% endif %}
+                </div>
+              </div>
+              <div class="review-stars">
+                {% for i in review.get_stars %}⭐{% endfor %}
+              </div>
+            </div>
+            <h6 class="review-title">{{ review.title }}</h6>
+            <p class="review-content">{{ review.content }}</p>
+            <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
+            {% if user == review.user %}
+            <div class="mt-2">
+              <a href="{% url 'reviews:delete' review.pk %}" class="btn btn-sm btn-outline-danger"
+                onclick="return confirm('Delete this review?')">Delete</a>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-reviews text-center py-4">
+          <p class="text-muted">No reviews yet. Be the first to share your experience!</p>
+          {% if user.is_authenticated %}
+          <a href="{% url 'reviews:submit' destination.slug %}" class="btn btn-primary">Write First Review</a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Sidebar Info -->
+    <div class="col-lg-4">
+      <div class="detail-sidebar sticky-top" style="top:80px;">
+
+        <!-- Quick Info Card -->
+        <div class="info-card mb-3">
+          <h6 class="info-card-title">Quick Info</h6>
+          <ul class="info-list">
+            {% if destination.entry_fee %}
+            <li><span>💰 Entry Fee</span><strong>{{ destination.entry_fee }}</strong></li>
+            {% endif %}
+            {% if destination.opening_hours %}
+            <li><span>🕐 Hours</span><strong>{{ destination.opening_hours }}</strong></li>
+            {% endif %}
+            {% if destination.best_time_to_visit %}
+            <li><span>🗓️ Best Time</span><strong>{{ destination.best_time_to_visit }}</strong></li>
+            {% endif %}
+            <li><span>💵 Budget</span><strong>{{ destination.get_budget_level_display }}</strong></li>
+            <li><span>🥾 Difficulty</span><strong>{{ destination.get_difficulty_display }}</strong></li>
+            {% if destination.province %}
+            <li><span>📍 Province</span><strong>{{ destination.province.name }}</strong></li>
+            {% endif %}
+          </ul>
+        </div>
+
+        <!-- Tags -->
+        {% if destination.get_tags_list %}
+        <div class="info-card mb-3">
+          <h6 class="info-card-title">Tags</h6>
+          <div class="d-flex flex-wrap gap-1">
+            {% for tag in destination.get_tags_list %}
+            <a href="{% url 'destinations:list' %}?q={{ tag }}" class="tag-pill">{{ tag }}</a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Similar Destinations -->
+        {% if related %}
+        <div class="info-card">
+          <h6 class="info-card-title">You Might Also Like</h6>
+          {% for r in related %}
+          <a href="{% url 'destinations:detail' r.slug %}" class="related-dest-link">
+            <div class="related-dest">
+              {% if r.featured_image %}
+                <img src="{{ r.featured_image.url }}" alt="{{ r.name }}">
+              {% else %}
+                <div class="related-placeholder">{{ r.category.icon|default:"🗺️" }}</div>
+              {% endif %}
+              <div>
+                <strong>{{ r.name }}</strong>
+                <small>{{ r.category.name }}</small>
+              </div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if destination.latitude and destination.longitude %}
+<script>
+  const map = L.map('dest-map').setView([{{ destination.latitude }}, {{ destination.longitude }}], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+  const marker = L.marker([{{ destination.latitude }}, {{ destination.longitude }}]).addTo(map);
+  marker.bindPopup('<strong>{{ destination.name }}</strong><br>{{ destination.city }}').openPopup();
+</script>
+{% endif %}
+
+<script>
+  // Favourite toggle
+  const favBtn = document.getElementById('favBtn');
+  if (favBtn) {
+    favBtn.addEventListener('click', async () => {
+      const res = await fetch(favBtn.dataset.url, {
+        method: 'POST',
+        headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json'}
+      });
+      const data = await res.json();
+      const icon = favBtn.querySelector('i');
+      const text = document.getElementById('favText');
+      if (data.status === 'added') {
+        icon.className = 'bi bi-heart-fill';
+        text.textContent = 'Saved';
+        favBtn.classList.add('active');
+      } else {
+        icon.className = 'bi bi-heart';
+        text.textContent = 'Save';
+        favBtn.classList.remove('active');
+      }
+    });
+  }
+</script>
+{% endblock %}

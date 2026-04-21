@@ -1,0 +1,115 @@
+{% extends "base/base.html" %}
+{% block title %}My Profile — Lanka Explorer{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="profile-card text-center p-4">
+        <div class="profile-avatar-lg mx-auto mb-3">
+          {% if user.profile.avatar %}
+            <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="rounded-circle" width="100" height="100">
+          {% else %}
+            <div class="avatar-placeholder-lg">{{ user.first_name.0|default:user.username.0|upper }}</div>
+          {% endif %}
+        </div>
+        <h4>{{ user.get_full_name|default:user.username }}</h4>
+        <p class="text-muted">{{ user.profile.get_traveller_type_display }}</p>
+        {% if user.profile.nationality %}<p class="text-muted small">🌍 {{ user.profile.nationality }}</p>{% endif %}
+        <div class="profile-stats d-flex justify-content-center gap-4 mt-3">
+          <div><strong>{{ favourites|length }}</strong><br><small class="text-muted">Saved</small></div>
+          <div><strong>{{ my_reviews|length }}</strong><br><small class="text-muted">Reviews</small></div>
+        </div>
+      </div>
+
+      {% if favourites %}
+      <div class="info-card mt-3">
+        <h6 class="info-card-title">Recent Favourites</h6>
+        {% for fav in favourites %}
+        <a href="{% url 'destinations:detail' fav.destination.slug %}" class="related-dest-link">
+          <div class="related-dest">
+            {% if fav.destination.featured_image %}
+              <img src="{{ fav.destination.featured_image.url }}" alt="{{ fav.destination.name }}">
+            {% else %}
+              <div class="related-placeholder">{{ fav.destination.category.icon|default:"🗺️" }}</div>
+            {% endif %}
+            <div>
+              <strong>{{ fav.destination.name }}</strong>
+              <small>{{ fav.destination.category.name }}</small>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+        <a href="{% url 'destinations:favourites' %}" class="btn btn-sm btn-outline-primary w-100 mt-2">View All Favourites</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="col-lg-8">
+      <div class="auth-card p-4">
+        <h5 class="mb-4">Edit Profile</h5>
+        <form method="POST" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          <h6 class="text-muted mb-3 small text-uppercase">Account Details</h6>
+          <div class="row g-3 mb-4">
+            {% for field in user_form %}
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}<div class="text-danger small">{{ field.errors|join:", " }}</div>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          <h6 class="text-muted mb-3 small text-uppercase">Travel Preferences</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Traveller Type</label>
+              {{ profile_form.traveller_type }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Preferred Budget</label>
+              {{ profile_form.preferred_budget }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Difficulty Preference</label>
+              {{ profile_form.preferred_difficulty }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Current Province</label>
+              {{ profile_form.current_province }}
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-semibold">Interests</label>
+              <div class="interests-grid mt-1">
+                {% for choice_val, choice_label in profile_form.interests_select.field.choices %}
+                <label class="interest-chip">
+                  <input type="checkbox" name="interests_select" value="{{ choice_val }}"
+                    {% if choice_val in profile_form.interests_select.value %}checked{% endif %}>
+                  <span>{{ choice_label }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary px-5">Save Changes</button>
+        </form>
+      </div>
+
+      {% if my_reviews %}
+      <div class="info-card mt-3 p-4">
+        <h6 class="info-card-title mb-3">My Reviews</h6>
+        {% for review in my_reviews %}
+        <div class="review-card mb-2">
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'destinations:detail' review.destination.slug %}" class="fw-semibold text-decoration-none">{{ review.destination.name }}</a>
+            <span>{% for i in review.get_stars %}⭐{% endfor %}</span>
+          </div>
+          <p class="small text-muted mb-1">{{ review.title }}</p>
+          <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

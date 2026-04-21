@@ -1,0 +1,42 @@
+{% extends "base/base.html" %}
+{% block title %}My Favourites — Lanka Explorer{% endblock %}
+{% block content %}
+<div class="page-header-simple py-4 bg-light border-bottom">
+  <div class="container">
+    <h1 class="mb-1">❤️ My Saved Destinations</h1>
+    <p class="text-muted mb-0">{{ favourites|length }} destination{{ favourites|length|pluralize }} saved</p>
+  </div>
+</div>
+<div class="container py-5">
+  {% if favourites %}
+  <div class="row g-4">
+    {% for fav in favourites %}
+    <div class="col-lg-4 col-md-6">
+      <a href="{% url 'destinations:detail' fav.destination.slug %}" class="destination-card-link">
+        <div class="destination-card h-100">
+          <div class="card-img-wrap">
+            {% if fav.destination.featured_image %}<img src="{{ fav.destination.featured_image.url }}" alt="{{ fav.destination.name }}" loading="lazy">
+            {% else %}<div class="card-img-placeholder large">{{ fav.destination.category.icon|default:"🗺️" }}</div>{% endif %}
+            <div class="card-badges"><span class="badge-category">{{ fav.destination.category.name }}</span></div>
+          </div>
+          <div class="card-body-custom">
+            <h5 class="card-title-custom">{{ fav.destination.name }}</h5>
+            <p class="card-location"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ fav.destination.province.name|default:fav.destination.city }}</p>
+            <p class="card-desc">{{ fav.destination.short_description|truncatechars:80 }}</p>
+            <small class="text-muted">Saved {{ fav.added_at|date:"d M Y" }}</small>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state text-center py-5">
+    <div class="empty-icon">❤️</div>
+    <h4>No saved destinations yet</h4>
+    <p class="text-muted">Click the heart icon on any destination to save it here.</p>
+    <a href="{% url 'destinations:list' %}" class="btn btn-primary">Start Exploring</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

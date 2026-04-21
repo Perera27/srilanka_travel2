@@ -1,0 +1,58 @@
+{% extends "base/base.html" %}
+{% block title %}Popular Destinations — Lanka Explorer{% endblock %}
+{% block content %}
+<div class="page-header-simple py-4 bg-light border-bottom">
+  <div class="container">
+    <p class="section-eyebrow mb-1">🔥 Trending</p>
+    <h1 class="mb-1">Popular Destinations</h1>
+    <p class="text-muted mb-0">Most visited and loved destinations across Sri Lanka</p>
+  </div>
+</div>
+<div class="container py-5">
+  {% if featured %}
+  <div class="mb-5">
+    <h4 class="mb-3">✨ Featured</h4>
+    <div class="row g-4">
+      {% for dest in featured %}
+      <div class="col-lg-4 col-md-6">
+        <a href="{% url 'destinations:detail' dest.slug %}" class="destination-card-link">
+          <div class="destination-card h-100">
+            <div class="card-img-wrap">
+              {% if dest.featured_image %}<img src="{{ dest.featured_image.url }}" alt="{{ dest.name }}" loading="lazy">
+              {% else %}<div class="card-img-placeholder large">{{ dest.category.icon|default:"🗺️" }}</div>{% endif %}
+              <div class="card-badges"><span class="badge-category">{{ dest.category.name }}</span></div>
+              <div class="card-budget badge-budget-{{ dest.budget_level }}">{{ dest.get_budget_level_display }}</div>
+            </div>
+            <div class="card-body-custom">
+              <h5 class="card-title-custom">{{ dest.name }}</h5>
+              <p class="card-location"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ dest.province.name|default:dest.city }}</p>
+              <p class="card-desc">{{ dest.short_description|truncatechars:80 }}</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  <h4 class="mb-3">📈 Most Visited</h4>
+  <div class="row g-3">
+    {% for dest in popular %}
+    <div class="col-lg-3 col-md-6 col-6">
+      <a href="{% url 'destinations:detail' dest.slug %}" class="mini-card-link">
+        <div class="mini-card">
+          <div class="mini-card-img">
+            {% if dest.featured_image %}<img src="{{ dest.featured_image.url }}" alt="{{ dest.name }}">
+            {% else %}<div class="mini-placeholder">{{ dest.category.icon|default:"🏝️" }}</div>{% endif %}
+          </div>
+          <div class="mini-card-body">
+            <h6>{{ dest.name }}</h6>
+            <small class="text-muted">{{ dest.category.name }}</small>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

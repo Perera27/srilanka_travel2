@@ -1,0 +1,60 @@
+{% extends "base/base.html" %}
+{% block title %}Your Recommendations — Lanka Explorer{% endblock %}
+{% block content %}
+<div class="page-header-simple py-4 bg-light border-bottom">
+  <div class="container">
+    <p class="section-eyebrow mb-1">✨ Personalised For You</p>
+    <h1 class="mb-1">Your Travel Recommendations</h1>
+    <p class="text-muted mb-0">Based on your interests:
+      {% for interest in interests %}<span class="badge bg-primary-subtle text-primary ms-1">{{ interest }}</span>{% endfor %}
+      — <a href="{% url 'accounts:profile' %}">Update preferences</a>
+    </p>
+  </div>
+</div>
+
+<div class="container py-5">
+  {% if recommendations %}
+  <div class="row g-4">
+    {% for dest in recommendations %}
+    <div class="col-lg-4 col-md-6">
+      <a href="{% url 'destinations:detail' dest.slug %}" class="destination-card-link">
+        <div class="destination-card h-100">
+          <div class="card-img-wrap">
+            {% if dest.featured_image %}
+              <img src="{{ dest.featured_image.url }}" alt="{{ dest.name }}" loading="lazy">
+            {% else %}
+              <div class="card-img-placeholder large">{{ dest.category.icon|default:"🗺️" }}</div>
+            {% endif %}
+            <div class="card-badges">
+              {% if dest.is_hidden_gem %}<span class="badge-gem">Hidden Gem</span>{% endif %}
+              <span class="badge-category">{{ dest.category.name }}</span>
+            </div>
+            <div class="card-budget badge-budget-{{ dest.budget_level }}">{{ dest.get_budget_level_display }}</div>
+          </div>
+          <div class="card-body-custom">
+            <div class="d-flex justify-content-between align-items-start">
+              <h5 class="card-title-custom">{{ dest.name }}</h5>
+              {% if dest.average_rating %}<span class="card-rating">⭐ {{ dest.average_rating }}</span>{% endif %}
+            </div>
+            <p class="card-location"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ dest.province.name|default:dest.city }}</p>
+            <p class="card-desc">{{ dest.short_description|truncatechars:90 }}</p>
+            <div class="card-footer-custom">
+              <span class="badge-difficulty diff-{{ dest.difficulty }}">{{ dest.get_difficulty_display }}</span>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state text-center py-5">
+    <div class="empty-icon">🌴</div>
+    <h4>No recommendations yet</h4>
+    <p class="text-muted">Update your travel preferences to get personalised suggestions.</p>
+    <a href="{% url 'accounts:profile' %}" class="btn btn-primary me-2">Set Preferences</a>
+    <a href="{% url 'destinations:list' %}" class="btn btn-outline-secondary">Browse All</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base/base.html" %}
+{% block title %}Hidden Gems — Lanka Explorer{% endblock %}
+{% block content %}
+<section class="hero-gems py-5 bg-dark text-white text-center">
+  <div class="container">
+    <p class="section-eyebrow text-warning">🪄 Off The Beaten Path</p>
+    <h1 class="text-white">Hidden Gems of Sri Lanka</h1>
+    <p class="text-muted lead">Places even locals keep to themselves — now revealed for you.</p>
+  </div>
+</section>
+<div class="container py-5">
+  {% if gems %}
+  <div class="row g-4">
+    {% for dest in gems %}
+    <div class="col-lg-4 col-md-6">
+      <a href="{% url 'destinations:detail' dest.slug %}" class="destination-card-link">
+        <div class="destination-card h-100">
+          <div class="card-img-wrap">
+            {% if dest.featured_image %}<img src="{{ dest.featured_image.url }}" alt="{{ dest.name }}" loading="lazy">
+            {% else %}<div class="card-img-placeholder large">{{ dest.category.icon|default:"💎" }}</div>{% endif %}
+            <div class="card-badges"><span class="badge-gem">Hidden Gem</span><span class="badge-category">{{ dest.category.name }}</span></div>
+            <div class="card-budget badge-budget-{{ dest.budget_level }}">{{ dest.get_budget_level_display }}</div>
+          </div>
+          <div class="card-body-custom">
+            <div class="d-flex justify-content-between">
+              <h5 class="card-title-custom">{{ dest.name }}</h5>
+              {% if dest.average_rating %}<span class="card-rating">⭐ {{ dest.average_rating }}</span>{% endif %}
+            </div>
+            <p class="card-location"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ dest.province.name|default:dest.city }}</p>
+            <p class="card-desc">{{ dest.short_description|truncatechars:90 }}</p>
+            <div class="card-footer-custom">
+              <span class="badge-difficulty diff-{{ dest.difficulty }}">{{ dest.get_difficulty_display }}</span>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state text-center py-5">
+    <div class="empty-icon">💎</div>
+    <h4>Hidden gems coming soon</h4>
+    <p class="text-muted">Our explorers are still discovering them. Check back soon!</p>
+    <a href="{% url 'destinations:list' %}" class="btn btn-primary">Browse All Destinations</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

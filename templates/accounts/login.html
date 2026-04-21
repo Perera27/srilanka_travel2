@@ -1,0 +1,33 @@
+{% extends "base/base.html" %}
+{% block title %}Login — Lanka Explorer{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-5 col-lg-4">
+        <div class="auth-card">
+          <div class="auth-header text-center mb-4">
+            <div class="auth-logo">🇱🇰</div>
+            <h2>Welcome Back</h2>
+            <p class="text-muted">Login to your Lanka Explorer account</p>
+          </div>
+          <form method="POST" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>{% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary w-100 btn-lg mt-2">Login</button>
+          </form>
+          <div class="text-center mt-3">
+            <small class="text-muted">New here? <a href="{% url 'accounts:register' %}">Create an account</a></small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

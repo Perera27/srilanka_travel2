@@ -1,0 +1,156 @@
+{% extends 'base/base.html' %}
+{% block title %}Manager Dashboard | Lanka Explorer{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-dark">
+  <div class="bg-white p-4 rounded shadow">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="mb-2 text-dark">Manager Dashboard</h1>
+        <p class="text-dark mb-0">
+          {% if is_administrator %}
+            Administrator view with full platform access.
+          {% else %}
+            Manager view for content and review moderation.
+          {% endif %}
+        </p>
+      </div>
+      <a href="/admin/" class="btn btn-primary">Open Admin Area</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card border shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="text-dark">Total Destinations</h5>
+            <h2 class="text-dark">{{ total_destinations }}</h2>
+            <p class="text-dark mb-0">Active: {{ active_destinations }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card border shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="text-dark">Hidden Gems</h5>
+            <h2 class="text-dark">{{ hidden_gems_count }}</h2>
+            <p class="text-dark mb-0">Special promoted places</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card border shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="text-dark">Reviews</h5>
+            <h2 class="text-dark">{{ total_reviews }}</h2>
+            <p class="text-dark mb-0">Pending approval: {{ pending_reviews }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6 col-lg-4">
+        <a href="/admin/destinations/destination/" class="card border shadow-sm h-100 text-decoration-none text-dark">
+          <div class="card-body">
+            <h5 class="text-dark">Manage Destinations</h5>
+            <p class="mb-0 text-dark">Add, edit, activate, and organise destinations.</p>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <a href="/admin/reviews/review/" class="card border shadow-sm h-100 text-decoration-none text-dark">
+          <div class="card-body">
+            <h5 class="text-dark">Moderate Reviews</h5>
+            <p class="mb-0 text-dark">Approve, edit, or remove visitor reviews.</p>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <a href="/admin/destinations/category/" class="card border shadow-sm h-100 text-decoration-none text-dark">
+          <div class="card-body">
+            <h5 class="text-dark">Manage Categories</h5>
+            <p class="mb-0 text-dark">Maintain destination categories.</p>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <a href="/admin/destinations/province/" class="card border shadow-sm h-100 text-decoration-none text-dark">
+          <div class="card-body">
+            <h5 class="text-dark">Manage Provinces</h5>
+            <p class="mb-0 text-dark">Organise destinations by province.</p>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <a href="/admin/destinations/destinationimage/" class="card border shadow-sm h-100 text-decoration-none text-dark">
+          <div class="card-body">
+            <h5 class="text-dark">Manage Images</h5>
+            <p class="mb-0 text-dark">Maintain destination image galleries.</p>
+          </div>
+        </a>
+      </div>
+
+      {% if is_administrator %}
+      <div class="col-md-6 col-lg-4">
+        <a href="/admin/auth/user/" class="card border shadow-sm h-100 text-decoration-none text-dark">
+          <div class="card-body">
+            <h5 class="text-dark">Manage Users</h5>
+            <p class="mb-0 text-dark">Administrator-only user and role management.</p>
+          </div>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card border shadow-sm h-100">
+          <div class="card-body">
+            <h4 class="mb-3 text-dark">Latest Reviews</h4>
+            {% if latest_reviews %}
+              <ul class="list-group list-group-flush">
+                {% for review in latest_reviews %}
+                <li class="list-group-item">
+                  <strong>{{ review.user.username }}</strong> reviewed
+                  <strong>{{ review.destination.name }}</strong>
+                  <div class="small text-muted">{{ review.rating }}/5 stars</div>
+                </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-dark mb-0">No reviews yet.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card border shadow-sm h-100">
+          <div class="card-body">
+            <h4 class="mb-3 text-dark">Top Destinations</h4>
+            {% if top_destinations %}
+              <ul class="list-group list-group-flush">
+                {% for destination in top_destinations %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>{{ destination.name }}</span>
+                  <span class="small text-muted">{{ destination.view_count }} views</span>
+                </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-dark mb-0">No destinations available.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
