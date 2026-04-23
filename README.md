@@ -97,6 +97,9 @@ Manager panel **http://127.0.0.1:8000/manager/** → manager1 / Dinuk123
 
 https://w1998413.pythonanywhere.com/
 
+User name: w1998413
+Password: Nemitha123
+
 ---
 
 ## 🌐 Pages & URLs
