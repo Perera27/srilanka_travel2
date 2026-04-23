@@ -93,6 +93,10 @@ Admin panel: **http://127.0.0.1:8000/admin** → admin / Nemitha123
 
 Manager panel **http://127.0.0.1:8000/manager/** → manager1 / Dinuk123
 
+### Start the server For Pythonanywhere
+
+https://w1998413.pythonanywhere.com/
+
 ---
 
 ## 🌐 Pages & URLs
